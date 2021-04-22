@@ -182,6 +182,8 @@ class php (
 
   if $manage_repos {
     contain php::repo
+  } else {
+    Class['apt::update'] -> Class['php']
   }
 
   class { 'php::packages': }

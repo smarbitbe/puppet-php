@@ -20,22 +20,24 @@
 
 class php::globals (
 
-  Optional[Pattern[/^(rh-)?(php)?[57](\.)?[0-9]/]] $php_version = undef,
-  Optional[Stdlib::Absolutepath] $config_root   = undef,
-  Optional[Stdlib::Absolutepath] $fpm_pid_file  = undef,
-  $rhscl_mode   = undef,
+  Optional[Pattern[/^(rh-)?(php)?[578](\.)?[0-9]/]] $php_version = undef,
+  Optional[Stdlib::Absolutepath] $config_root                    = undef,
+  Optional[Stdlib::Absolutepath] $fpm_pid_file                   = undef,
+  $rhscl_mode                                                    = undef,
 ) {
+
   $default_php_version = $facts['os']['name'] ? {
     'Debian' => $facts['os']['release']['major'] ? {
       '9'     => '7.0',
-      default => '7.3',
+      '10'    => '7.3',
+      default => '5.x',
     },
     'Ubuntu' => $facts['os']['release']['major'] ? {
-      '20.04' => '7.4',
+      '18.04' => '7.2',
       '16.04' => '7.0',
-      default => '7.2',
+      default => '5.x',
     },
-    default => '5.x',
+    default  => '5.x',
   }
 
   $globals_php_version = pick($php_version, $default_php_version)
@@ -44,6 +46,15 @@ class php::globals (
     'Debian': {
       if $facts['os']['name'] == 'Ubuntu' {
         case $globals_php_version {
+          /^5\.4/: {
+            $default_config_root = '/etc/php5'
+            $default_fpm_pid_file = "/var/run/php/php${globals_php_version}-fpm.pid"
+            $fpm_error_log = '/var/log/php5-fpm.log'
+            $fpm_service_name = 'php5-fpm'
+            $ext_tool_enable = '/usr/sbin/php5enmod'
+            $ext_tool_query = '/usr/sbin/php5query'
+            $package_prefix = 'php5-'
+          }
           /^[57].[0-9]/: {
             $default_config_root = "/etc/php/${globals_php_version}"
             $default_fpm_pid_file = "/var/run/php/php${globals_php_version}-fpm.pid"
@@ -68,14 +79,15 @@ class php::globals (
       } else {
         case $globals_php_version {
           /^5\.6/,
-          /^7\.[0-9]/: {
-            $default_config_root  = "/etc/php/${globals_php_version}"
+          /^7\.[0-9]/,
+          /^8\.[0-9]/: {
+            $default_config_root = "/etc/php/${globals_php_version}"
             $default_fpm_pid_file = "/var/run/php/php${globals_php_version}-fpm.pid"
-            $fpm_error_log        = "/var/log/php${globals_php_version}-fpm.log"
-            $fpm_service_name     = "php${globals_php_version}-fpm"
-            $ext_tool_enable      = "/usr/sbin/phpenmod -v ${globals_php_version}"
-            $ext_tool_query       = "/usr/sbin/phpquery -v ${globals_php_version}"
-            $package_prefix       = "php${globals_php_version}-"
+            $fpm_error_log = "/var/log/php${globals_php_version}-fpm.log"
+            $fpm_service_name = "php${globals_php_version}-fpm"
+            $ext_tool_enable = "/usr/sbin/phpenmod -v ${globals_php_version}"
+            $ext_tool_query = "/usr/sbin/phpquery -v ${globals_php_version}"
+            $package_prefix = "php${globals_php_version}-"
           }
           default: {
             $default_config_root = '/etc/php5'
@@ -108,24 +120,24 @@ class php::globals (
     'RedHat': {
       case $rhscl_mode {
         'remi': {
-          $rhscl_root             = "/opt/remi/${php_version}/root"
-          $default_config_root    = "/etc/opt/remi/${php_version}"
-          $default_fpm_pid_file   = '/var/run/php-fpm/php-fpm.pid'
-          $package_prefix         = "${php_version}-php-"
-          $fpm_service_name       = "${php_version}-php-fpm"
+          $rhscl_root = "/opt/remi/${php_version}/root"
+          $default_config_root = "/etc/opt/remi/${php_version}"
+          $default_fpm_pid_file = '/var/run/php-fpm/php-fpm.pid'
+          $package_prefix = "${php_version}-php-"
+          $fpm_service_name = "${php_version}-php-fpm"
         }
         'rhscl': {
-          $rhscl_root             = "/opt/rh/${php_version}/root"
-          $default_config_root    = "/etc/opt/rh/${php_version}" # rhscl registers contents by copy in /etc/opt/rh
-          $default_fpm_pid_file   = "/var/opt/rh/${php_version}/run/php-fpm/php-fpm.pid"
-          $package_prefix         = "${php_version}-php-"
-          $fpm_service_name       = "${php_version}-php-fpm"
+          $rhscl_root = "/opt/rh/${php_version}/root"
+          $default_config_root = "/etc/opt/rh/${php_version}" # rhscl registers contents by copy in /etc/opt/rh
+          $default_fpm_pid_file = "/var/opt/rh/${php_version}/run/php-fpm/php-fpm.pid"
+          $package_prefix = "${php_version}-php-"
+          $fpm_service_name = "${php_version}-php-fpm"
         }
         undef: {
-          $default_config_root    = '/etc/php.d'
-          $default_fpm_pid_file   = '/var/run/php-fpm/php-fpm.pid'
-          $fpm_service_name       = undef
-          $package_prefix         = undef
+          $default_config_root = '/etc/php.d'
+          $default_fpm_pid_file = '/var/run/php-fpm/php-fpm.pid'
+          $fpm_service_name = undef
+          $package_prefix = undef
         }
         default: {
           fail("Unsupported rhscl_mode '${rhscl_mode}'")
@@ -141,12 +153,12 @@ class php::globals (
           $package_prefix = 'php56-'
         }
       }
-      $default_config_root  = '/usr/local/etc'
+      $default_config_root = '/usr/local/etc'
       $default_fpm_pid_file = '/var/run/php-fpm.pid'
-      $fpm_service_name     = undef
+      $fpm_service_name = undef
     }
     'Archlinux': {
-      $default_config_root  =  '/etc/php'
+      $default_config_root = '/etc/php'
       $default_fpm_pid_file = '/run/php-fpm/php-fpm.pid'
     }
     default: {
@@ -154,6 +166,6 @@ class php::globals (
     }
   }
 
-  $globals_config_root    = pick($config_root, $default_config_root)
-  $globals_fpm_pid_file   = pick($fpm_pid_file, $default_fpm_pid_file)
+  $globals_config_root = pick($config_root, $default_config_root)
+  $globals_fpm_pid_file = pick($fpm_pid_file, $default_fpm_pid_file)
 }
