@@ -172,10 +172,13 @@ class php (
 ) inherits php::params {
   $real_fpm_package = pick($fpm_package, "${package_prefix}${php::params::fpm_package_suffix}")
 
-  $real_settings = deep_merge($settings, hiera_hash('php::settings', {}))
-  $real_extensions = deep_merge($extensions, hiera_hash('php::extensions', {}))
+  $real_settings = $settings
+  $real_extensions = $extensions
   $real_fpm_pools = $fpm_pools
   $real_fpm_global_pool_settings = $fpm_global_pool_settings
+
+  # Merge in additional or overridden settings for php::cli::settings.
+  $final_cli_settings = $real_settings + $cli_settings
 
   if $manage_repos {
     contain php::repo
@@ -185,7 +188,7 @@ class php (
 
   class { 'php::packages': }
   -> class { 'php::cli':
-    settings => $real_settings,
+    settings => $final_cli_settings,
   }
   contain php::packages
   contain php::cli
