@@ -76,7 +76,7 @@ class php::fpm (
   $log_group                            = $php::log_group,
   Boolean $pool_purge                   = $php::pool_purge,
   Boolean $reload_fpm_on_config_changes = $php::reload_fpm_on_config_changes,
-) {
+) inherits php::params {
   if ! defined(Class['php']) {
     warning('php::fpm is private')
   }
