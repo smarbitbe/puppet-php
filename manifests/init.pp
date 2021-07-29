@@ -159,6 +159,7 @@ class php (
   Hash $extensions                                = {},
   Hash $settings                                  = {},
   Hash $cli_settings                              = {},
+  Hash $fpm_settings                              = {},
   $package_prefix                                 = $php::params::package_prefix,
   Stdlib::Absolutepath $config_root_ini           = $php::params::config_root_ini,
   Stdlib::Absolutepath $config_root_inifile       = $php::params::config_root_inifile,
@@ -179,6 +180,7 @@ class php (
 
   # Merge in additional or overridden settings for php::cli::settings.
   $final_cli_settings = $real_settings + $cli_settings
+  $final_fpm_settings = $real_settings + $fpm_settings
 
   if $manage_repos {
     contain php::repo
@@ -202,7 +204,13 @@ class php (
     contain php::global
   }
 
-  if $fpm { contain 'php::fpm' }
+  if $fpm {
+    class { 'php::fpm':
+      settings => $final_fpm_settings,
+    }
+    contain 'php::fpm'
+  }
+
   if $embedded {
     if $facts['os']['family'] == 'RedHat' and $fpm {
       # Both fpm and embeded SAPIs are using same php.ini

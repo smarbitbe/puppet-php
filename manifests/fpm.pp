@@ -69,7 +69,7 @@ class php::fpm (
   $service_provider                     = $php::fpm_service_provider,
   String $package                       = $php::real_fpm_package,
   Stdlib::Absolutepath $inifile         = $php::fpm_inifile,
-  Hash $settings                        = $php::real_settings,
+  Hash $settings                        = {},
   $global_pool_settings                 = $php::real_fpm_global_pool_settings,
   Hash $pools                           = $php::real_fpm_pools,
   $log_owner                            = $php::log_owner,
