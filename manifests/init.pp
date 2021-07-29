@@ -208,7 +208,6 @@ class php (
     class { 'php::fpm':
       settings => $final_fpm_settings,
     }
-    contain 'php::fpm'
   }
 
   if $embedded {
