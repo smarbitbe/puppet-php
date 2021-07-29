@@ -202,12 +202,7 @@ class php (
     contain php::global
   }
 
-  if $fpm {
-    class { '::php::fpm':
-      settings => $real_settings,
-    }
-  }
-
+  if $fpm { contain 'php::fpm' }
   if $embedded {
     if $facts['os']['family'] == 'RedHat' and $fpm {
       # Both fpm and embeded SAPIs are using same php.ini
