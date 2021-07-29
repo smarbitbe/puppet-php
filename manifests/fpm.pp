@@ -69,7 +69,7 @@ class php::fpm (
   $service_provider                     = $php::fpm_service_provider,
   String $package                       = $php::real_fpm_package,
   Stdlib::Absolutepath $inifile         = $php::fpm_inifile,
-  Hash $settings                        = {},
+  Hash $settings                        = $php::real_settings,
   $global_pool_settings                 = $php::real_fpm_global_pool_settings,
   Hash $pools                           = $php::real_fpm_pools,
   $log_owner                            = $php::log_owner,
@@ -81,7 +81,7 @@ class php::fpm (
     warning('php::fpm is private')
   }
 
-  $real_settings = deep_merge($settings, hiera_hash('php::fpm::settings', {}))
+  $real_settings = $settings
 
   # On FreeBSD fpm is not a separate package, but included in the 'php' package.
   # Implies that the option SET+=FPM was set when building the port.
